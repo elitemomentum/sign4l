@@ -2,6 +2,11 @@ import streamlit as st
 import requests
 
 API_BASE = "https://fey1agm25l.execute-api.ap-south-1.amazonaws.com/dev"
+API_KEY = "pcsk_w9Hxy_5x4QjXh7o17b2iGpdPGTGUDYiMbD6KAgJitQtucLUVL7tk9ckkDDSevoFZNECjq"
+
+headers = {
+    "x-api-key": API_KEY  # API Key header
+}
 
 st.title("📚 Document-based Assistant Manager")
 
@@ -21,7 +26,7 @@ if menu == "Create Assistant":
             data = {
                 "assistant_name": assistant_name
             }
-            res = requests.post(f"{API_BASE}/create-assistant", files=files, data=data)
+            res = requests.post(f"{API_BASE}/create-assistant", files=files, data=data, headers=headers)
             if res.ok:
                 st.success(res.json().get("message"))
             else:
@@ -41,7 +46,7 @@ elif menu == "Query Assistant":
                 "assistant_name": assistant_name,
                 "query": query
             }
-            res = requests.post(f"{API_BASE}/query-assistant", json=payload)
+            res = requests.post(f"{API_BASE}/query-assistant", json=payload, headers=headers)
             if res.ok:
                 st.success(res.json().get("response"))
             else:
@@ -59,7 +64,7 @@ elif menu == "Delete Assistant":
             payload = {
                 "assistant_name": assistant_name
             }
-            res = requests.post(f"{API_BASE}/delete-assistant", json=payload)
+            res = requests.post(f"{API_BASE}/delete-assistant", json=payload, headers=headers)
             if res.ok:
                 st.success(res.json().get("message"))
             else:
