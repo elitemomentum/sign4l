@@ -3,57 +3,66 @@ import requests
 
 API_BASE = "https://fey1agm25l.execute-api.ap-south-1.amazonaws.com/dev"
 
-st.set_page_config(page_title="Assistant Manager", layout="centered")
+st.title("📚 Document-based Assistant Manager")
 
-st.title("🧠 Pinecone Assistant Manager")
+menu = st.sidebar.radio("Choose Action", ["Create Assistant", "Query Assistant", "Delete Assistant"])
 
+# 1. CREATE ASSISTANT
+if menu == "Create Assistant":
+    st.header("🔧 Create Assistant & Upload ZIP")
+    assistant_name = st.text_input("Assistant Name")
+    zip_file = st.file_uploader("Upload ZIP file of PDFs", type=["zip"])
 
-# ========== 1. Create Assistant ==========
-st.header("1️⃣ Create Assistant")
+    if st.button("Create and Upload"):
+        if assistant_name and zip_file:
+            files = {
+                "zip_file": zip_file,
+            }
+            data = {
+                "assistant_name": assistant_name
+            }
+            res = requests.post(f"{API_BASE}/create-assistant", files=files, data=data)
+            if res.ok:
+                st.success(res.json().get("message"))
+            else:
+                st.error(f"❌ Error: {res.text}")
+        else:
+            st.warning("Please enter an assistant name and upload a ZIP file.")
 
-with st.form("create_form"):
-    assistant_name = st.text_input("Assistant Name", key="assistant")
-    zip_file = st.file_uploader("Upload ZIP File (PDFs inside)", type="zip")
-    create_btn = st.form_submit_button("🚀 Create Assistant")
+# 2. QUERY ASSISTANT
+elif menu == "Query Assistant":
+    st.header("💬 Query Assistant")
+    assistant_name = st.text_input("Assistant Name")
+    query = st.text_area("Ask a question")
 
-if create_btn and zip_file and assistant_name:
-    files = {
-        "zip_file": (zip_file.name, zip_file, "application/zip"),
-    }
-    data = {"assistant_name": assistant_name}
-    res = requests.post(f"{API_BASE}/create-assistant", files=files, data=data)
-    st.success(res.json().get("message")) if res.ok else st.error(res.text)
+    if st.button("Ask"):
+        if assistant_name and query:
+            payload = {
+                "assistant_name": assistant_name,
+                "query": query
+            }
+            res = requests.post(f"{API_BASE}/query-assistant", json=payload)
+            if res.ok:
+                st.success(res.json().get("response"))
+            else:
+                st.error(f"❌ Error: {res.text}")
+        else:
+            st.warning("Enter both assistant name and query.")
 
+# 3. DELETE ASSISTANT
+elif menu == "Delete Assistant":
+    st.header("🗑️ Delete Assistant")
+    assistant_name = st.text_input("Assistant Name to Delete")
 
-# ========== 2. Query Assistant ==========
-st.header("2️⃣ Query Assistant")
-
-with st.form("query_form"):
-    q_assistant = st.text_input("Assistant Name", key="query_asst")
-    query_text = st.text_area("Your Question")
-    query_btn = st.form_submit_button("💬 Ask")
-
-if query_btn and q_assistant and query_text:
-    payload = {
-        "assistant_name": q_assistant,
-        "query": query_text
-    }
-    res = requests.post(f"{API_BASE}/query-assistant", json=payload)
-    if res.ok:
-        st.markdown("**Answer:**")
-        st.success(res.json().get("response"))
-    else:
-        st.error(res.text)
-
-
-# ========== 3. Delete Assistant ==========
-st.header("3️⃣ Delete Assistant")
-
-with st.form("delete_form"):
-    del_assistant = st.text_input("Assistant Name to Delete", key="delete_asst")
-    delete_btn = st.form_submit_button("🗑️ Delete")
-
-if delete_btn and del_assistant:
-    payload = {"assistant_name": del_assistant}
-    res = requests.post(f"{API_BASE}/delete-assistant", json=payload)
-    st.success(res.json().get("message")) if res.ok else st.error(res.text)
+    if st.button("Delete"):
+        if assistant_name:
+            payload = {
+                "assistant_name": assistant_name
+            }
+            res = requests.post(f"{API_BASE}/delete-assistant", json=payload)
+            if res.ok:
+                st.success(res.json().get("message"))
+            else:
+                st.error(f"❌ Error: {res.text}")
+        else:
+            st.warning("Enter an assistant name to delete.")
