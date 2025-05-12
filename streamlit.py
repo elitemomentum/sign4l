@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 
 API_BASE = "https://fey1agm25l.execute-api.ap-south-1.amazonaws.com/dev"
-API_KEY = "demoHub"
+API_KEY = "fey1agm25l"
 
 headers = {
     "x-api-key": API_KEY  # API Key header
